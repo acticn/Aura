@@ -1,1 +1,1 @@
-add_executable(Aura main.cpp interface/vulkan_rhi.cpp)
+add_executable(Aura main.cpp interface/vulkan/vulkan_rhi.cpp)
