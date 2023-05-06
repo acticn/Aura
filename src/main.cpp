@@ -9,9 +9,6 @@ int main() {
     Aura::Aura aura;
     aura.run();
     printf("hello world \n");
-
-    
-    
-    
+    system("pause");
     return 0;
 }
