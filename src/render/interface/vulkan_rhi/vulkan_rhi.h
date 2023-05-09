@@ -4,10 +4,12 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <vector>
-#include "vulkan_instance.h"
+
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
+
+
 
 namespace Aura {
     class VulkanRHI : public RHI {
@@ -17,8 +19,18 @@ namespace Aura {
             void initWindow();
             static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
             bool framebufferResized = false;
+
         private:
-            VulkanInstance instance;
+            void createInstance();
+                bool checkValidationLayerSupport();
+                std::vector<const char*> getRequiredExtensions();
+                void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+        private:
+            VkInstance instance;
             GLFWwindow* window;
+            bool enableValidationLayers = true;
+            const std::vector<const char*> validationLayers = {
+                "VK_LAYER_KHRONOS_validation"
+            };
     };
 } 
