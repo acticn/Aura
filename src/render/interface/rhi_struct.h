@@ -11,6 +11,7 @@ namespace Aura {
     class RHISemaphore { };
     class RHIFence { };
     class RHIImageView { };
+    class RHIImage { };
     struct RHIExtent2D {
         uint32_t width;
         uint32_t height;

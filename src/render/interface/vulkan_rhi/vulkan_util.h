@@ -26,7 +26,7 @@ namespace Aura
                                             VkImageViewType    view_type,
                                             uint32_t           layout_count,
                                             uint32_t           miplevels);
-        uint32_t    findMemoryType(VkPhysicalDevice      physical_device,
+        static uint32_t    findMemoryType(VkPhysicalDevice      physical_device,
                                         uint32_t              type_filter,
                                         VkMemoryPropertyFlags properties_flag);
     };

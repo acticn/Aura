@@ -98,6 +98,10 @@ namespace Aura {
             RHIExtent2D m_swapchain_extent;
             RHIRect2D m_scissor;
             std::vector<RHIImageView*> m_swapchain_imageviews;
+
+            RHIImage*        m_depth_image = new VulkanImage();
+            VkDeviceMemory m_depth_image_memory {nullptr};
+            RHIImageView* m_depth_image_view = new VulkanImageView();
         private:
             VkInstance m_instance;
             VkPhysicalDevice m_physical_device;
@@ -123,5 +127,6 @@ namespace Aura {
             VkPresentModeKHR VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes);
             VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
             void createSwapchainImageViews();
+            void createFramebufferImageAndView();
     };
 } 

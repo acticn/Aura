@@ -108,4 +108,19 @@ namespace Aura
     private:
         VkImageView m_resource;
     };
+
+    class VulkanImage : public RHIImage
+    {
+    public:
+        void setResource(VkImage res)
+        {
+            m_resource = res;
+        }
+        VkImage &getResource()
+        {
+            return m_resource;
+        }
+    private:
+        VkImage m_resource;
+    };
 } // namespace Aura
