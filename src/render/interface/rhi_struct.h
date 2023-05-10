@@ -8,6 +8,19 @@ namespace Aura {
     class RHIDescriptorPool { };
     class RHISemaphore { };
     class RHIFence { };
+    struct RHIExtent2D {
+        uint32_t width;
+        uint32_t height;
+    };
+    struct RHIOffset2D {
+        int32_t x;
+        int32_t y;
+    };
+    struct RHIRect2D
+    {
+        RHIOffset2D offset;
+        RHIExtent2D extent;
+    };
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
         std::optional<uint32_t> present_family;

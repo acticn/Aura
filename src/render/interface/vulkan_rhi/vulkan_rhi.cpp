@@ -19,6 +19,7 @@ namespace Aura {
         createCommandBuffers();
         createDescriptorPool();
         createSyncPrimitives();
+        createSwapchain();
         std::cout << "initialized" << std::endl;
 
     }
@@ -600,6 +601,126 @@ namespace Aura {
 
             m_rhi_is_frame_in_flight_fences[i] = new VulkanFence();
             ((VulkanFence*)m_rhi_is_frame_in_flight_fences[i])->setResource(m_is_frame_in_flight_fences[i]);
+        }
+    }
+
+    void VulkanRHI::createSwapchain()
+    {
+        // query all supports of this physical device
+        SwapChainSupportDetails swapchain_support_details = querySwapChainSupport(m_physical_device);
+
+        // choose the best or fitting format
+        VkSurfaceFormatKHR chosen_surface_format =
+            chooseSwapchainSurfaceFormatFromDetails(swapchain_support_details.formats);
+        // choose the best or fitting present mode
+        VkPresentModeKHR chosen_presentMode =
+            chooseSwapchainPresentModeFromDetails(swapchain_support_details.presentModes);
+        // choose the best or fitting extent
+        VkExtent2D chosen_extent = chooseSwapchainExtentFromDetails(swapchain_support_details.capabilities);
+
+        uint32_t image_count = swapchain_support_details.capabilities.minImageCount + 1;
+        if (swapchain_support_details.capabilities.maxImageCount > 0 &&
+            image_count > swapchain_support_details.capabilities.maxImageCount)
+        {
+            image_count = swapchain_support_details.capabilities.maxImageCount;
+        }
+
+        VkSwapchainCreateInfoKHR createInfo {};
+        createInfo.sType   = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = m_surface;
+
+        createInfo.minImageCount    = image_count;
+        createInfo.imageFormat      = chosen_surface_format.format;
+        createInfo.imageColorSpace  = chosen_surface_format.colorSpace;
+        createInfo.imageExtent      = chosen_extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        uint32_t queueFamilyIndices[] = {m_queue_indices.graphics_family.value(), m_queue_indices.present_family.value()};
+
+        if (m_queue_indices.graphics_family != m_queue_indices.present_family)
+        {
+            createInfo.imageSharingMode      = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices   = queueFamilyIndices;
+        }
+        else
+        {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+
+        createInfo.preTransform   = swapchain_support_details.capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode    = chosen_presentMode;
+        createInfo.clipped        = VK_TRUE;
+
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+        if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+        {
+            LOG_ERROR("vk create swapchain khr");
+        }
+
+        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, nullptr);
+        m_swapchain_images.resize(image_count);
+        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, m_swapchain_images.data());
+
+        m_swapchain_image_format = (RHIFormat)chosen_surface_format.format;
+        m_swapchain_extent.height = chosen_extent.height;
+        m_swapchain_extent.width = chosen_extent.width;
+
+        m_scissor = {{0, 0}, {m_swapchain_extent.width, m_swapchain_extent.height}};
+    }
+
+    VkSurfaceFormatKHR
+    VulkanRHI::chooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& available_surface_formats)
+    {
+        for (const auto& surface_format : available_surface_formats)
+        {
+            // TODO: select the VK_FORMAT_B8G8R8A8_SRGB surface format,
+            // there is no need to do gamma correction in the fragment shader
+            if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
+                surface_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                return surface_format;
+            }
+        }
+        return available_surface_formats[0];
+    }
+
+    VkPresentModeKHR
+    VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes)
+    {
+        for (VkPresentModeKHR present_mode : available_present_modes)
+        {
+            if (VK_PRESENT_MODE_MAILBOX_KHR == present_mode)
+            {
+                return VK_PRESENT_MODE_MAILBOX_KHR;
+            }
+        }
+
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D VulkanRHI::chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities)
+    {
+        if (capabilities.currentExtent.width != UINT32_MAX)
+        {
+            return capabilities.currentExtent;
+        }
+        else
+        {
+            int width, height;
+            glfwGetFramebufferSize(m_window, &width, &height);
+
+            VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+
+            actualExtent.width =
+                std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            actualExtent.height =
+                std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+            return actualExtent;
         }
     }
 }

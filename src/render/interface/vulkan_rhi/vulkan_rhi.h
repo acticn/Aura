@@ -89,7 +89,12 @@ namespace Aura {
             RHISemaphore*        m_image_available_for_texturescopy_semaphores[k_max_frames_in_flight];
             VkFence              m_is_frame_in_flight_fences[k_max_frames_in_flight];
             RHIFence* m_rhi_is_frame_in_flight_fences[k_max_frames_in_flight];
-            
+
+            VkSwapchainKHR           m_swapchain {nullptr};
+            std::vector<VkImage>     m_swapchain_images;
+            RHIFormat m_swapchain_image_format{ RHI_FORMAT_UNDEFINED };
+            RHIExtent2D m_swapchain_extent;
+            RHIRect2D m_scissor;
         private:
             VkInstance m_instance;
             VkPhysicalDevice m_physical_device;
@@ -110,5 +115,9 @@ namespace Aura {
             void createCommandBuffers();
             void createDescriptorPool();
             void createSyncPrimitives();
+            void createSwapchain();
+            VkSurfaceFormatKHR chooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& available_surface_formats);
+            VkPresentModeKHR VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes);
+            VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
     };
 } 
