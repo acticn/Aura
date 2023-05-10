@@ -84,7 +84,8 @@ namespace Aura {
             QueueFamilyIndices m_queue_indices;
             VulkanCommandPool* m_rhi_command_pool;
             VkCommandPool        m_command_pools[k_max_frames_in_flight];
-
+            VkCommandBuffer      m_vk_command_buffers[k_max_frames_in_flight];
+            RHICommandBuffer* m_command_buffers[k_max_frames_in_flight];
             
             void initWindow();
             void createWindowSurface();
@@ -94,5 +95,6 @@ namespace Aura {
                                      VkFormatFeatureFlags         features);
 
             void createCommandPool();
+            void createCommandBuffers();
     };
 } 

@@ -507,4 +507,25 @@ namespace Aura {
         }
         LOG_ERROR("SUCCESS:vk create command pool ");
     }
+
+    void VulkanRHI::createCommandBuffers()
+    {
+        VkCommandBufferAllocateInfo command_buffer_allocate_info {};
+        command_buffer_allocate_info.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        command_buffer_allocate_info.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        command_buffer_allocate_info.commandBufferCount = 1U;
+
+        for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
+        {
+            command_buffer_allocate_info.commandPool = m_command_pools[i];
+            VkCommandBuffer vk_command_buffer;
+            if (vkAllocateCommandBuffers(m_device, &command_buffer_allocate_info, &vk_command_buffer) != VK_SUCCESS)
+            {
+                LOG_ERROR("vk allocate command buffers");
+            }
+            m_vk_command_buffers[i] = vk_command_buffer;
+            m_command_buffers[i] = new VulkanCommandBuffer();
+            ((VulkanCommandBuffer*)m_command_buffers[i])->setResource(vk_command_buffer);
+        }
+    }
 }

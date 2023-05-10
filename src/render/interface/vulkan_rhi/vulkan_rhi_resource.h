@@ -33,4 +33,19 @@ namespace Aura
     private:
         VkCommandPool m_resource;
     };
+
+    class VulkanCommandBuffer : public RHICommandBuffer
+    {
+    public:
+        void setResource(VkCommandBuffer res)
+        {
+            m_resource = res;
+        }
+        const VkCommandBuffer getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkCommandBuffer m_resource;
+    };
 } // namespace Aura
