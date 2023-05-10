@@ -49,7 +49,9 @@ namespace Aura {
             VkDevice           m_device {nullptr};
             VkQueue            m_present_queue {nullptr};
             RHIFormat m_depth_image_format{ RHI_FORMAT_UNDEFINED };
+            RHIDescriptorPool* m_descriptor_pool = new VulkanDescriptorPool();
 
+            VkDescriptorPool m_vk_descriptor_pool;
                 // function pointers
             PFN_vkCmdBeginDebugUtilsLabelEXT _vkCmdBeginDebugUtilsLabelEXT;
             PFN_vkCmdEndDebugUtilsLabelEXT   _vkCmdEndDebugUtilsLabelEXT;
@@ -71,6 +73,8 @@ namespace Aura {
             PFN_vkCmdClearAttachments   _vkCmdClearAttachments;
         private:
             static uint8_t const k_max_frames_in_flight {3};
+            uint32_t m_max_vertex_blending_mesh_count{ 256 };
+            uint32_t m_max_material_count{ 256 };
             bool m_enable_validation_Layers{true};
             bool m_enable_point_light_shadow{true};
             VkDebugUtilsMessengerEXT m_debug_messenger = nullptr;
@@ -86,7 +90,7 @@ namespace Aura {
             VkCommandPool        m_command_pools[k_max_frames_in_flight];
             VkCommandBuffer      m_vk_command_buffers[k_max_frames_in_flight];
             RHICommandBuffer* m_command_buffers[k_max_frames_in_flight];
-            
+
             void initWindow();
             void createWindowSurface();
             VkFormat findDepthFormat();
@@ -96,5 +100,6 @@ namespace Aura {
 
             void createCommandPool();
             void createCommandBuffers();
+            void createDescriptorPool();
     };
 } 

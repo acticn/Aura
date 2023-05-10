@@ -48,4 +48,19 @@ namespace Aura
     private:
         VkCommandBuffer m_resource;
     };
+
+    class VulkanDescriptorPool : public RHIDescriptorPool
+    {
+    public:
+        void setResource(VkDescriptorPool res)
+        {
+            m_resource = res;
+        }
+        VkDescriptorPool getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkDescriptorPool m_resource;
+    };
 } // namespace Aura
