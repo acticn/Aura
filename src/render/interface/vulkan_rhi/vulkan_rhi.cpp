@@ -1,6 +1,6 @@
 #include "vulkan_rhi.h"
 
-
+#define LOG_ERROR(msg) std::cout << "LOG:" << msg << std::endl;
 
 namespace Aura {
     void VulkanRHI::initialize() {
@@ -723,4 +723,26 @@ namespace Aura {
             return actualExtent;
         }
     }
+
+    void VulkanRHI::createSwapchainImageViews()
+    {
+        m_swapchain_imageviews.resize(m_swapchain_images.size());
+
+        // create imageview (one for each this time) for all swapchain images
+        for (size_t i = 0; i < m_swapchain_images.size(); i++)
+        {
+            VkImageView vk_image_view;
+            vk_image_view = VulkanUtil::createImageView(m_device,
+                                                                   m_swapchain_images[i],
+                                                                   (VkFormat)m_swapchain_image_format,
+                                                                   VK_IMAGE_ASPECT_COLOR_BIT,
+                                                                   VK_IMAGE_VIEW_TYPE_2D,
+                                                                   1,
+                                                                   1);
+            m_swapchain_imageviews[i] = new VulkanImageView();
+            ((VulkanImageView*)m_swapchain_imageviews[i])->setResource(vk_image_view);
+        }
+    }
+
+    
 }

@@ -9,7 +9,9 @@
 #include "../rhi_struct.h"
 #include "vulkan_rhi_resource.h"
 #include "../../render_type.h"
-#define LOG_ERROR(msg) std::cout << "LOG:" << msg << std::endl;
+#include "vulkan_util.h"
+
+
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
@@ -95,6 +97,7 @@ namespace Aura {
             RHIFormat m_swapchain_image_format{ RHI_FORMAT_UNDEFINED };
             RHIExtent2D m_swapchain_extent;
             RHIRect2D m_scissor;
+            std::vector<RHIImageView*> m_swapchain_imageviews;
         private:
             VkInstance m_instance;
             VkPhysicalDevice m_physical_device;
@@ -119,5 +122,6 @@ namespace Aura {
             VkSurfaceFormatKHR chooseSwapchainSurfaceFormatFromDetails(const std::vector<VkSurfaceFormatKHR>& available_surface_formats);
             VkPresentModeKHR VulkanRHI::chooseSwapchainPresentModeFromDetails(const std::vector<VkPresentModeKHR>& available_present_modes);
             VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
+            void createSwapchainImageViews();
     };
 } 

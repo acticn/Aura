@@ -4,7 +4,8 @@
 add_executable(Aura 
 main.cpp 
 Aura.cpp 
-${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_rhi.cpp)
+${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_rhi.cpp 
+${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_util.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
 ${Vulkan_INCLUDE_DIR} 

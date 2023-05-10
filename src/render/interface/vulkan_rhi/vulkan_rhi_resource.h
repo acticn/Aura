@@ -93,4 +93,19 @@ namespace Aura
     private:
         VkFence m_resource;
     };
+
+    class VulkanImageView : public RHIImageView
+    {
+    public:
+        void setResource(VkImageView res)
+        {
+            m_resource = res;
+        }
+        VkImageView getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkImageView m_resource;
+    };
 } // namespace Aura

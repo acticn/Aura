@@ -1,6 +1,8 @@
 #pragma once
 #include <optional>
-
+#include <iostream>
+#include <vector>
+#include <vulkan/vulkan.h>
 namespace Aura {
     class RHIQueue { };
     class RHICommandPool { };
@@ -8,6 +10,7 @@ namespace Aura {
     class RHIDescriptorPool { };
     class RHISemaphore { };
     class RHIFence { };
+    class RHIImageView { };
     struct RHIExtent2D {
         uint32_t width;
         uint32_t height;
