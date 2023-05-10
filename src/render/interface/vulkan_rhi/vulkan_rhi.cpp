@@ -14,6 +14,8 @@ namespace Aura {
         initializeDebugMessenger();
         createWindowSurface();
         initializePhysicalDevice();
+        createLogicalDevice();
+        createCommandPool();
         std::cout << "initialized" << std::endl;
 
     }
@@ -349,4 +351,160 @@ namespace Aura {
         return details_result;
     }
 
+    void VulkanRHI::createLogicalDevice()
+    {
+        m_queue_indices = findQueueFamilies(m_physical_device);
+
+        std::vector<VkDeviceQueueCreateInfo> queue_create_infos; // all queues that need to be created
+        std::set<uint32_t>                   queue_families = {m_queue_indices.graphics_family.value(),
+                                             m_queue_indices.present_family.value(),
+                                             m_queue_indices.m_compute_family.value()};
+
+        float queue_priority = 1.0f;
+        for (uint32_t queue_family : queue_families) // for every queue family
+        {
+            // queue create info
+            VkDeviceQueueCreateInfo queue_create_info {};
+            queue_create_info.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queue_create_info.queueFamilyIndex = queue_family;
+            queue_create_info.queueCount       = 1;
+            queue_create_info.pQueuePriorities = &queue_priority;
+            queue_create_infos.push_back(queue_create_info);
+        }
+
+        // physical device features
+        VkPhysicalDeviceFeatures physical_device_features = {};
+
+        physical_device_features.samplerAnisotropy = VK_TRUE;
+
+        // support inefficient readback storage buffer
+        physical_device_features.fragmentStoresAndAtomics = VK_TRUE;
+
+        // support independent blending
+        physical_device_features.independentBlend = VK_TRUE;
+
+        // support geometry shader
+        if (m_enable_point_light_shadow)
+        {
+            physical_device_features.geometryShader = VK_TRUE;
+        }
+
+        // device create info
+        VkDeviceCreateInfo device_create_info {};
+        device_create_info.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        device_create_info.pQueueCreateInfos       = queue_create_infos.data();
+        device_create_info.queueCreateInfoCount    = static_cast<uint32_t>(queue_create_infos.size());
+        device_create_info.pEnabledFeatures        = &physical_device_features;
+        device_create_info.enabledExtensionCount   = static_cast<uint32_t>(m_device_extensions.size());
+        device_create_info.ppEnabledExtensionNames = m_device_extensions.data();
+        device_create_info.enabledLayerCount       = 0;
+
+        if (vkCreateDevice(m_physical_device, &device_create_info, nullptr, &m_device) != VK_SUCCESS)
+        {
+            LOG_ERROR("vk create device");
+        }
+
+        // initialize queues of this device
+        VkQueue vk_graphics_queue;
+        vkGetDeviceQueue(m_device, m_queue_indices.graphics_family.value(), 0, &vk_graphics_queue);
+        m_graphics_queue = new VulkanQueue();
+        ((VulkanQueue*)m_graphics_queue)->setResource(vk_graphics_queue);
+
+        vkGetDeviceQueue(m_device, m_queue_indices.present_family.value(), 0, &m_present_queue);
+
+        VkQueue vk_compute_queue;
+        vkGetDeviceQueue(m_device, m_queue_indices.m_compute_family.value(), 0, &vk_compute_queue);
+        m_compute_queue = new VulkanQueue();
+        ((VulkanQueue*)m_compute_queue)->setResource(vk_compute_queue);
+
+        std::cout << "queues:" << std::endl;
+        std::cout << vk_graphics_queue << std::endl;
+        std::cout << m_present_queue << std::endl;
+        std::cout << vk_compute_queue << std::endl;
+        // more efficient pointer
+        _vkResetCommandPool      = (PFN_vkResetCommandPool)vkGetDeviceProcAddr(m_device, "vkResetCommandPool");
+        _vkBeginCommandBuffer    = (PFN_vkBeginCommandBuffer)vkGetDeviceProcAddr(m_device, "vkBeginCommandBuffer");
+        _vkEndCommandBuffer      = (PFN_vkEndCommandBuffer)vkGetDeviceProcAddr(m_device, "vkEndCommandBuffer");
+        _vkCmdBeginRenderPass    = (PFN_vkCmdBeginRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdBeginRenderPass");
+        _vkCmdNextSubpass        = (PFN_vkCmdNextSubpass)vkGetDeviceProcAddr(m_device, "vkCmdNextSubpass");
+        _vkCmdEndRenderPass      = (PFN_vkCmdEndRenderPass)vkGetDeviceProcAddr(m_device, "vkCmdEndRenderPass");
+        _vkCmdBindPipeline       = (PFN_vkCmdBindPipeline)vkGetDeviceProcAddr(m_device, "vkCmdBindPipeline");
+        _vkCmdSetViewport        = (PFN_vkCmdSetViewport)vkGetDeviceProcAddr(m_device, "vkCmdSetViewport");
+        _vkCmdSetScissor         = (PFN_vkCmdSetScissor)vkGetDeviceProcAddr(m_device, "vkCmdSetScissor");
+        _vkWaitForFences         = (PFN_vkWaitForFences)vkGetDeviceProcAddr(m_device, "vkWaitForFences");
+        _vkResetFences           = (PFN_vkResetFences)vkGetDeviceProcAddr(m_device, "vkResetFences");
+        _vkCmdDrawIndexed        = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(m_device, "vkCmdDrawIndexed");
+        _vkCmdBindVertexBuffers  = (PFN_vkCmdBindVertexBuffers)vkGetDeviceProcAddr(m_device, "vkCmdBindVertexBuffers");
+        _vkCmdBindIndexBuffer    = (PFN_vkCmdBindIndexBuffer)vkGetDeviceProcAddr(m_device, "vkCmdBindIndexBuffer");
+        _vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)vkGetDeviceProcAddr(m_device, "vkCmdBindDescriptorSets");
+        _vkCmdClearAttachments   = (PFN_vkCmdClearAttachments)vkGetDeviceProcAddr(m_device, "vkCmdClearAttachments");
+
+        m_depth_image_format = (RHIFormat)findDepthFormat();
+    }
+    VkFormat VulkanRHI::findDepthFormat() {
+        return findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                                   VK_IMAGE_TILING_OPTIMAL,
+                                   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    }
+    VkFormat VulkanRHI::findSupportedFormat(const std::vector<VkFormat>& candidates,
+                                            VkImageTiling                tiling,
+                                            VkFormatFeatureFlags         features)
+    {
+        for (VkFormat format : candidates)
+        {
+            VkFormatProperties props;
+            vkGetPhysicalDeviceFormatProperties(m_physical_device, format, &props);
+
+            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+            {
+                return format;
+            }
+            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+            {
+                return format;
+            }
+        }
+
+        LOG_ERROR("findSupportedFormat failed");
+        return VkFormat();
+    }
+
+    void VulkanRHI::createCommandPool()
+    {
+        // default graphics command pool
+        {
+            m_rhi_command_pool = new VulkanCommandPool();
+            VkCommandPool vk_command_pool;
+            VkCommandPoolCreateInfo command_pool_create_info {};
+            command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext            = NULL;
+            command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            command_pool_create_info.queueFamilyIndex = m_queue_indices.graphics_family.value();
+
+            if (vkCreateCommandPool(m_device, &command_pool_create_info, nullptr, &vk_command_pool) != VK_SUCCESS)
+            {
+                LOG_ERROR("vk create command pool");
+            }
+
+            ((VulkanCommandPool*)m_rhi_command_pool)->setResource(vk_command_pool);
+        }
+
+        // other command pools
+        {
+            VkCommandPoolCreateInfo command_pool_create_info;
+            command_pool_create_info.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext            = NULL;
+            command_pool_create_info.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+            command_pool_create_info.queueFamilyIndex = m_queue_indices.graphics_family.value();
+
+            for (uint32_t i = 0; i < k_max_frames_in_flight; ++i)
+            {
+                if (vkCreateCommandPool(m_device, &command_pool_create_info, NULL, &m_command_pools[i]) != VK_SUCCESS)
+                {
+                    LOG_ERROR("vk create command pool");
+                }
+            }
+        }
+        LOG_ERROR("SUCCESS:vk create command pool ");
+    }
 }

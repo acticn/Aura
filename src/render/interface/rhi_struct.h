@@ -2,6 +2,8 @@
 #include <optional>
 
 namespace Aura {
+    class RHIQueue { };
+    class RHICommandPool { };
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphics_family;
         std::optional<uint32_t> present_family;
