@@ -18,6 +18,7 @@ namespace Aura {
         createCommandPool();
         createCommandBuffers();
         createDescriptorPool();
+        createSyncPrimitives();
         std::cout << "initialized" << std::endl;
 
     }
@@ -570,4 +571,35 @@ namespace Aura {
         ((VulkanDescriptorPool*)m_descriptor_pool)->setResource(m_vk_descriptor_pool);
     }
 
+
+    void VulkanRHI::createSyncPrimitives()
+    {
+        VkSemaphoreCreateInfo semaphore_create_info {};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fence_create_info {};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT; // the fence is initialized as signaled
+
+        for (uint32_t i = 0; i < k_max_frames_in_flight; i++)
+        {
+            m_image_available_for_texturescopy_semaphores[i] = new VulkanSemaphore();
+            if (vkCreateSemaphore(
+                    m_device, &semaphore_create_info, nullptr, &m_image_available_for_render_semaphores[i]) !=
+                    VK_SUCCESS ||
+                vkCreateSemaphore(
+                    m_device, &semaphore_create_info, nullptr, &m_image_finished_for_presentation_semaphores[i]) !=
+                    VK_SUCCESS ||
+                vkCreateSemaphore(
+                    m_device, &semaphore_create_info, nullptr, &(((VulkanSemaphore*)m_image_available_for_texturescopy_semaphores[i])->getResource())) !=
+                    VK_SUCCESS ||
+                vkCreateFence(m_device, &fence_create_info, nullptr, &m_is_frame_in_flight_fences[i]) != VK_SUCCESS)
+            {
+                LOG_ERROR("vk create semaphore & fence");
+            }
+
+            m_rhi_is_frame_in_flight_fences[i] = new VulkanFence();
+            ((VulkanFence*)m_rhi_is_frame_in_flight_fences[i])->setResource(m_is_frame_in_flight_fences[i]);
+        }
+    }
 }

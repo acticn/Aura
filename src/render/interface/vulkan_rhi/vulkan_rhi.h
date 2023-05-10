@@ -41,6 +41,18 @@ namespace Aura {
             SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physicalm_device);
 
             void createLogicalDevice();
+
+
+            static uint8_t const k_max_frames_in_flight {3};
+            uint32_t m_max_vertex_blending_mesh_count{ 256 };
+            uint32_t m_max_material_count{ 256 };
+            bool m_enable_validation_Layers{true};
+            bool m_enable_point_light_shadow{true};
+            VkDebugUtilsMessengerEXT m_debug_messenger = nullptr;
+            const std::vector<const char*> validationLayers = {
+                "VK_LAYER_KHRONOS_validation"
+            };
+            std::vector<char const*> m_device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         public:
             GLFWwindow*        m_window {nullptr};
             VkSurfaceKHR       m_surface {nullptr};
@@ -71,17 +83,13 @@ namespace Aura {
             PFN_vkCmdBindDescriptorSets _vkCmdBindDescriptorSets;
             PFN_vkCmdDrawIndexed        _vkCmdDrawIndexed;
             PFN_vkCmdClearAttachments   _vkCmdClearAttachments;
-        private:
-            static uint8_t const k_max_frames_in_flight {3};
-            uint32_t m_max_vertex_blending_mesh_count{ 256 };
-            uint32_t m_max_material_count{ 256 };
-            bool m_enable_validation_Layers{true};
-            bool m_enable_point_light_shadow{true};
-            VkDebugUtilsMessengerEXT m_debug_messenger = nullptr;
-            const std::vector<const char*> validationLayers = {
-                "VK_LAYER_KHRONOS_validation"
-            };
-            std::vector<char const*> m_device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+            VkSemaphore          m_image_available_for_render_semaphores[k_max_frames_in_flight];
+            VkSemaphore          m_image_finished_for_presentation_semaphores[k_max_frames_in_flight];
+            RHISemaphore*        m_image_available_for_texturescopy_semaphores[k_max_frames_in_flight];
+            VkFence              m_is_frame_in_flight_fences[k_max_frames_in_flight];
+            RHIFence* m_rhi_is_frame_in_flight_fences[k_max_frames_in_flight];
+            
         private:
             VkInstance m_instance;
             VkPhysicalDevice m_physical_device;
@@ -101,5 +109,6 @@ namespace Aura {
             void createCommandPool();
             void createCommandBuffers();
             void createDescriptorPool();
+            void createSyncPrimitives();
     };
 } 
