@@ -16,6 +16,10 @@ ${PROJECT_SOURCE_DIR}/src/render/interface)
 target_include_directories(${PROJECT_NAME} PUBLIC 
 ${PROJECT_SOURCE_DIR}/src/3rdparty/vulkanmemoryallocator/include) 
 
+target_include_directories(${PROJECT_NAME} PUBLIC 
+${PROJECT_SOURCE_DIR}/src/3rdparty/tinyobjloader) 
+
 find_library(GLFW_LIBRARY glfw3 PATHS ${GLFW_DIR}/lib-vc2022)
 
 target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARY} ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY})
+target_link_libraries(${PROJECT_NAME} tinyobjloader)

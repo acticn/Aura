@@ -10,3 +10,4 @@ include_directories(${GLFW_DIR}/include)
 set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(src)
+add_subdirectory(src/3rdparty/tinyobjloader)
