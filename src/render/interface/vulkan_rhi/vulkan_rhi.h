@@ -1,6 +1,8 @@
 #pragma once
 #include "../rhi.h"
 #include <iostream>
+
+
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <vector>
@@ -10,6 +12,8 @@
 #include "vulkan_rhi_resource.h"
 #include "../../render_type.h"
 #include "vulkan_util.h"
+#include <vk_mem_alloc.h>
+
 
 
 const uint32_t WIDTH = 800;
@@ -54,6 +58,7 @@ namespace Aura {
             const std::vector<const char*> validationLayers = {
                 "VK_LAYER_KHRONOS_validation"
             };
+            uint32_t m_vulkan_api_version {VK_API_VERSION_1_0};
             std::vector<char const*> m_device_extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         public:
             GLFWwindow*        m_window {nullptr};
@@ -64,6 +69,8 @@ namespace Aura {
             VkQueue            m_present_queue {nullptr};
             RHIFormat m_depth_image_format{ RHI_FORMAT_UNDEFINED };
             RHIDescriptorPool* m_descriptor_pool = new VulkanDescriptorPool();
+
+            VmaAllocator m_assets_allocator;
 
             VkDescriptorPool m_vk_descriptor_pool;
                 // function pointers
@@ -128,5 +135,6 @@ namespace Aura {
             VkExtent2D chooseSwapchainExtentFromDetails(const VkSurfaceCapabilitiesKHR& capabilities);
             void createSwapchainImageViews();
             void createFramebufferImageAndView();
+            void createAssetAllocator();
     };
 } 

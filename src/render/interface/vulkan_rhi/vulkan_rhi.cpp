@@ -21,6 +21,8 @@ namespace Aura {
         createSyncPrimitives();
         createSwapchain();
         createSwapchainImageViews();
+        createFramebufferImageAndView();
+        createAssetAllocator();
         std::cout << "initialized" << std::endl;
 
     }
@@ -766,4 +768,19 @@ namespace Aura {
             VulkanUtil::createImageView(m_device, ((VulkanImage*)m_depth_image)->getResource(), (VkFormat)m_depth_image_format, VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1));
     }
     
+    void VulkanRHI::createAssetAllocator()
+    {
+        VmaVulkanFunctions vulkanFunctions    = {};
+        vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+        vulkanFunctions.vkGetDeviceProcAddr   = &vkGetDeviceProcAddr;
+
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.vulkanApiVersion       = m_vulkan_api_version;
+        allocatorCreateInfo.physicalDevice         = m_physical_device;
+        allocatorCreateInfo.device                 = m_device;
+        allocatorCreateInfo.instance               = m_instance;
+        allocatorCreateInfo.pVulkanFunctions       = &vulkanFunctions;
+
+        vmaCreateAllocator(&allocatorCreateInfo, &m_assets_allocator);
+    }
 }

@@ -5,12 +5,16 @@ add_executable(Aura
 main.cpp 
 Aura.cpp 
 ${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_rhi.cpp 
-${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_util.cpp)
+${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_util.cpp 
+${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi/vulkan_vma.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE 
+target_include_directories(${PROJECT_NAME} PUBLIC 
 ${Vulkan_INCLUDE_DIR} 
 ${PROJECT_SOURCE_DIR}/src/render/interface/vulkan_rhi
 ${PROJECT_SOURCE_DIR}/src/render/interface) 
+
+target_include_directories(${PROJECT_NAME} PUBLIC 
+${PROJECT_SOURCE_DIR}/src/3rdparty/vulkanmemoryallocator/include) 
 
 find_library(GLFW_LIBRARY glfw3 PATHS ${GLFW_DIR}/lib-vc2022)
 
