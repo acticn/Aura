@@ -14,6 +14,10 @@ namespace Aura
     typedef uint32_t RHIFramebufferCreateFlags;
     typedef uint32_t RHIDescriptorSetLayoutCreateFlags;
     typedef uint32_t RHIShaderStageFlags;
+    typedef uint64_t RHIDeviceSize;
+    typedef uint32_t RHIBufferUsageFlags;
+    typedef uint32_t RHIMemoryPropertyFlags;
+    
     enum RHIDescriptorType : int
     {
         RHI_DESCRIPTOR_TYPE_SAMPLER = 0,

@@ -1,7 +1,8 @@
 #pragma once
 #include "../rhi_struct.h"
+#include "../rhi.h"
 #include "vulkan_rhi_resource.h"
-
+#include "vulkan_rhi.h"
 namespace Aura
 {
     class VulkanUtil {
@@ -29,5 +30,18 @@ namespace Aura
         static uint32_t    findMemoryType(VkPhysicalDevice      physical_device,
                                         uint32_t              type_filter,
                                         VkMemoryPropertyFlags properties_flag);
+        static void createBuffer(VkPhysicalDevice      physical_device,
+                                  VkDevice              device,
+                                  VkDeviceSize          size,
+                                  VkBufferUsageFlags    usage,
+                                  VkMemoryPropertyFlags properties,
+                                  VkBuffer&             buffer,
+                                  VkDeviceMemory&       buffer_memory);
+        static void copyBuffer(RHI*         rhi,
+                                VkBuffer     srcBuffer,
+                                VkBuffer     dstBuffer,
+                                VkDeviceSize srcOffset,
+                                VkDeviceSize dstOffset,
+                                VkDeviceSize size);
     };
 } // namespace Aura

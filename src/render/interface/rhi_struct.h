@@ -6,6 +6,7 @@
 #include "../render_type.h"
 namespace Aura {
     class RHIQueue { };
+    class RHIDeviceMemory { };
     class RHICommandPool { };
     class RHICommandBuffer { };
     class RHIDescriptorPool { };
@@ -17,6 +18,52 @@ namespace Aura {
     class RHIFramebuffer { };
     class RHIDescriptorSetLayout { };
     class RHISampler { };
+    class RHIBufferView { };
+    class RHIDescriptorSet { };
+    class RHIBuffer { };
+    struct RHIDescriptorImageInfo {
+        RHISampler* sampler;
+        RHIImageView* imageView;
+        RHIImageLayout imageLayout;
+    };
+
+    struct RHIDescriptorBufferInfo {
+        RHIBuffer* buffer;
+        RHIDeviceSize offset;
+        RHIDeviceSize range;
+    };
+    struct RHIWriteDescriptorSet
+    {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIDescriptorSet* dstSet;
+        uint32_t dstBinding;
+        uint32_t dstArrayElement;
+        uint32_t descriptorCount;
+        RHIDescriptorType descriptorType;
+        RHIDescriptorImageInfo* pImageInfo = nullptr;
+        RHIDescriptorBufferInfo* pBufferInfo = nullptr;
+        RHIBufferView* pTexelBufferView = nullptr;
+    };
+    struct RHICopyDescriptorSet {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIDescriptorSet* srcSet;
+        uint32_t srcBinding;
+        uint32_t srcArrayElement;
+        RHIDescriptorSet* dstSet;
+        uint32_t dstBinding;
+        uint32_t dstArrayElement;
+        uint32_t descriptorCount;
+    };
+    struct RHIDescriptorSetAllocateInfo
+    {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIDescriptorPool* descriptorPool;
+        uint32_t descriptorSetCount;
+        const RHIDescriptorSetLayout* const* pSetLayouts;
+    };
     struct RHIDescriptorSetLayoutBinding
     {
         uint32_t binding;

@@ -147,5 +147,11 @@ namespace Aura {
             bool createRenderPass(const RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass* &pRenderPass);
             bool createFramebuffer(const RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer* &pFramebuffer);
             bool createDescriptorSetLayout(const RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout* &pSetLayout);
-    };
+            bool allocateDescriptorSets(const RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet* &pDescriptorSets);
+            void updateDescriptorSets(uint32_t descriptorWriteCount,const RHIWriteDescriptorSet* pDescriptorWrites,uint32_t descriptorCopyCount,const RHICopyDescriptorSet* pDescriptorCopies);
+            void createBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer* & buffer, RHIDeviceMemory* & buffer_memory);
+            void copyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size);
+            RHICommandBuffer* beginSingleTimeCommands();
+            void endSingleTimeCommands(RHICommandBuffer* command_buffer);
+    };      
 } 

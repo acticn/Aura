@@ -4,6 +4,49 @@
 #include <vulkan/vulkan.h>
 namespace Aura
 {
+    class VulkanBuffer : public RHIBuffer
+    {
+    public:
+        void setResource(VkBuffer res)
+        {
+            m_resource = res;
+        }
+        VkBuffer getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkBuffer m_resource;
+    };
+    class VulkanDeviceMemory : public RHIDeviceMemory
+    {
+    public:
+        void setResource(VkDeviceMemory res)
+        {
+            m_resource = res;
+        }
+        VkDeviceMemory getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkDeviceMemory m_resource;
+    };
+    
+    class VulkanDescriptorSet : public RHIDescriptorSet
+    {
+    public:
+        void setResource(VkDescriptorSet res)
+        {
+            m_resource = res;
+        }
+        VkDescriptorSet getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkDescriptorSet m_resource;
+    };
     class VulkanDescriptorSetLayout : public RHIDescriptorSetLayout
     {
     public:

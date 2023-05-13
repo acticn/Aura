@@ -12,11 +12,14 @@ namespace Aura {
             RHIRenderPass* renderpass;
             std::vector<RHIFramebuffer*> framebuffers;
             RHIDescriptorSetLayout* layout;
+            std::vector<RHIDescriptorSet> descriptorSets;
             void mainLoop();
             void drawFrame();
             void initialize();
             void setupRenderPass();
             void setupFrameBuffers();
             void setupDescriptorSetLayout();
+            void setupVertexBuffer();
+            void setupDescriptorSet();
     };
 }

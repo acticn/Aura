@@ -147,4 +147,18 @@ namespace Aura {
             throw std::runtime_error("create debug draw layout");
         }
     }
+
+    void Aura::setupDescriptorSet() {
+        // std::vector<RHIDescriptorSetLayout> layouts(2, *layout);
+
+        // RHIDescriptorSetAllocateInfo allocateInfo;
+        // if (RHI_SUCCESS != rhi->allocateDescriptorSets(&allocateInfo, ))
+        // {
+        //     throw std::runtime_error("allocate post process global descriptor set");
+        // }
+    }
+
+    void Aura::setupVertexBuffer() {
+        
+    }
 } 

@@ -1141,4 +1141,208 @@ namespace Aura {
             return false;
         }
     }
+
+    bool VulkanRHI::allocateDescriptorSets(const RHIDescriptorSetAllocateInfo* pAllocateInfo, RHIDescriptorSet* &pDescriptorSets)
+    {
+        //descriptor_set_layout
+        int descriptor_set_layout_size = pAllocateInfo->descriptorSetCount;
+        std::vector<VkDescriptorSetLayout> vk_descriptor_set_layout_list(descriptor_set_layout_size);
+        for (int i = 0; i < descriptor_set_layout_size; ++i)
+        {
+            const auto& rhi_descriptor_set_layout_element = pAllocateInfo->pSetLayouts[i];
+            auto& vk_descriptor_set_layout_element = vk_descriptor_set_layout_list[i];
+
+            vk_descriptor_set_layout_element = ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element)->getResource();
+
+            VulkanDescriptorSetLayout* test = ((VulkanDescriptorSetLayout*)rhi_descriptor_set_layout_element);
+
+            test = nullptr;
+        };
+
+        VkDescriptorSetAllocateInfo descriptorset_allocate_info{};
+        descriptorset_allocate_info.sType = (VkStructureType)pAllocateInfo->sType;
+        descriptorset_allocate_info.pNext = (const void*)pAllocateInfo->pNext;
+        descriptorset_allocate_info.descriptorPool = ((VulkanDescriptorPool*)(pAllocateInfo->descriptorPool))->getResource();
+        descriptorset_allocate_info.descriptorSetCount = pAllocateInfo->descriptorSetCount;
+        descriptorset_allocate_info.pSetLayouts = vk_descriptor_set_layout_list.data();
+
+        VkDescriptorSet vk_descriptor_set;
+        pDescriptorSets = new VulkanDescriptorSet;
+        VkResult result = vkAllocateDescriptorSets(m_device, &descriptorset_allocate_info, &vk_descriptor_set);
+        ((VulkanDescriptorSet*)pDescriptorSets)->setResource(vk_descriptor_set);
+
+        if (result == VK_SUCCESS)
+        {
+            return true;
+        }
+        else
+        {
+            LOG_ERROR("vkAllocateDescriptorSets failed!");
+            return false;
+        }
+    }
+
+    void VulkanRHI::updateDescriptorSets(
+        uint32_t descriptorWriteCount,
+        const RHIWriteDescriptorSet* pDescriptorWrites,
+        uint32_t descriptorCopyCount,
+        const RHICopyDescriptorSet* pDescriptorCopies)
+    {
+        //write_descriptor_set
+        int write_descriptor_set_size = descriptorWriteCount;
+        std::vector<VkWriteDescriptorSet> vk_write_descriptor_set_list(write_descriptor_set_size);
+        int image_info_count = 0;
+        int buffer_info_count = 0;
+        for (int i = 0; i < write_descriptor_set_size; ++i)
+        {
+            const auto& rhi_write_descriptor_set_element = pDescriptorWrites[i];
+            if (rhi_write_descriptor_set_element.pImageInfo != nullptr)
+            {
+                image_info_count++;
+            }
+            if (rhi_write_descriptor_set_element.pBufferInfo != nullptr)
+            {
+                buffer_info_count++;
+            }
+        }
+        std::vector<VkDescriptorImageInfo> vk_descriptor_image_info_list(image_info_count);
+        std::vector<VkDescriptorBufferInfo> vk_descriptor_buffer_info_list(buffer_info_count);
+        int image_info_current = 0;
+        int buffer_info_current = 0;
+
+        for (int i = 0; i < write_descriptor_set_size; ++i)
+        {
+            const auto& rhi_write_descriptor_set_element = pDescriptorWrites[i];
+            auto& vk_write_descriptor_set_element = vk_write_descriptor_set_list[i];
+
+            const VkDescriptorImageInfo* vk_descriptor_image_info_ptr = nullptr;
+            if (rhi_write_descriptor_set_element.pImageInfo != nullptr)
+            {
+                auto& vk_descriptor_image_info = vk_descriptor_image_info_list[image_info_current];
+                if (rhi_write_descriptor_set_element.pImageInfo->sampler == nullptr)
+                {
+                    vk_descriptor_image_info.sampler = nullptr;
+                }
+                else
+                {
+                    vk_descriptor_image_info.sampler = ((VulkanSampler*)rhi_write_descriptor_set_element.pImageInfo->sampler)->getResource();
+                }
+                vk_descriptor_image_info.imageView = ((VulkanImageView*)rhi_write_descriptor_set_element.pImageInfo->imageView)->getResource();
+                vk_descriptor_image_info.imageLayout = (VkImageLayout)rhi_write_descriptor_set_element.pImageInfo->imageLayout;
+
+                vk_descriptor_image_info_ptr = &vk_descriptor_image_info;
+                image_info_current++;
+            }
+
+            const VkDescriptorBufferInfo* vk_descriptor_buffer_info_ptr = nullptr;
+            if (rhi_write_descriptor_set_element.pBufferInfo != nullptr)
+            {
+                auto& vk_descriptor_buffer_info = vk_descriptor_buffer_info_list[buffer_info_current];
+                vk_descriptor_buffer_info.buffer = ((VulkanBuffer*)rhi_write_descriptor_set_element.pBufferInfo->buffer)->getResource();
+                vk_descriptor_buffer_info.offset = (VkDeviceSize)rhi_write_descriptor_set_element.pBufferInfo->offset;
+                vk_descriptor_buffer_info.range = (VkDeviceSize)rhi_write_descriptor_set_element.pBufferInfo->range;
+
+                vk_descriptor_buffer_info_ptr = &vk_descriptor_buffer_info;
+                buffer_info_current++;
+            }
+
+            vk_write_descriptor_set_element.sType = (VkStructureType)rhi_write_descriptor_set_element.sType;
+            vk_write_descriptor_set_element.pNext = (const void*)rhi_write_descriptor_set_element.pNext;
+            vk_write_descriptor_set_element.dstSet = ((VulkanDescriptorSet*)rhi_write_descriptor_set_element.dstSet)->getResource();
+            vk_write_descriptor_set_element.dstBinding = rhi_write_descriptor_set_element.dstBinding;
+            vk_write_descriptor_set_element.dstArrayElement = rhi_write_descriptor_set_element.dstArrayElement;
+            vk_write_descriptor_set_element.descriptorCount = rhi_write_descriptor_set_element.descriptorCount;
+            vk_write_descriptor_set_element.descriptorType = (VkDescriptorType)rhi_write_descriptor_set_element.descriptorType;
+            vk_write_descriptor_set_element.pImageInfo = vk_descriptor_image_info_ptr;
+            vk_write_descriptor_set_element.pBufferInfo = vk_descriptor_buffer_info_ptr;
+            //vk_write_descriptor_set_element.pTexelBufferView = &((VulkanBufferView*)rhi_write_descriptor_set_element.pTexelBufferView)->getResource();
+        };
+
+        if (image_info_current != image_info_count
+            || buffer_info_current != buffer_info_count)
+        {
+            LOG_ERROR("image_info_current != image_info_count || buffer_info_current != buffer_info_count");
+            return;
+        }
+
+        //copy_descriptor_set
+        int copy_descriptor_set_size = descriptorCopyCount;
+        std::vector<VkCopyDescriptorSet> vk_copy_descriptor_set_list(copy_descriptor_set_size);
+        for (int i = 0; i < copy_descriptor_set_size; ++i)
+        {
+            const auto& rhi_copy_descriptor_set_element = pDescriptorCopies[i];
+            auto& vk_copy_descriptor_set_element = vk_copy_descriptor_set_list[i];
+
+            vk_copy_descriptor_set_element.sType = (VkStructureType)rhi_copy_descriptor_set_element.sType;
+            vk_copy_descriptor_set_element.pNext = (const void*)rhi_copy_descriptor_set_element.pNext;
+            vk_copy_descriptor_set_element.srcSet = ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.srcSet)->getResource();
+            vk_copy_descriptor_set_element.srcBinding = rhi_copy_descriptor_set_element.srcBinding;
+            vk_copy_descriptor_set_element.srcArrayElement = rhi_copy_descriptor_set_element.srcArrayElement;
+            vk_copy_descriptor_set_element.dstSet = ((VulkanDescriptorSet*)rhi_copy_descriptor_set_element.dstSet)->getResource();
+            vk_copy_descriptor_set_element.dstBinding = rhi_copy_descriptor_set_element.dstBinding;
+            vk_copy_descriptor_set_element.dstArrayElement = rhi_copy_descriptor_set_element.dstArrayElement;
+            vk_copy_descriptor_set_element.descriptorCount = rhi_copy_descriptor_set_element.descriptorCount;
+        };
+
+        vkUpdateDescriptorSets(m_device, descriptorWriteCount, vk_write_descriptor_set_list.data(), descriptorCopyCount, vk_copy_descriptor_set_list.data());
+    }
+
+    void VulkanRHI::createBuffer(RHIDeviceSize size, RHIBufferUsageFlags usage, RHIMemoryPropertyFlags properties, RHIBuffer* & buffer, RHIDeviceMemory* & buffer_memory)
+    {
+        VkBuffer vk_buffer;
+        VkDeviceMemory vk_device_memory;
+        
+        VulkanUtil::createBuffer(m_physical_device, m_device, size, usage, properties, vk_buffer, vk_device_memory);
+
+        buffer = new VulkanBuffer();
+        buffer_memory = new VulkanDeviceMemory();
+        ((VulkanBuffer*)buffer)->setResource(vk_buffer);
+        ((VulkanDeviceMemory*)buffer_memory)->setResource(vk_device_memory);
+    }
+
+    void VulkanRHI::copyBuffer(RHIBuffer* srcBuffer, RHIBuffer* dstBuffer, RHIDeviceSize srcOffset, RHIDeviceSize dstOffset, RHIDeviceSize size)
+    {
+        VkBuffer vk_src_buffer = ((VulkanBuffer*)srcBuffer)->getResource();
+        VkBuffer vk_dst_buffer = ((VulkanBuffer*)dstBuffer)->getResource();
+        VulkanUtil::copyBuffer(this, vk_src_buffer, vk_dst_buffer, srcOffset, dstOffset, size);
+    }
+
+    RHICommandBuffer* VulkanRHI::beginSingleTimeCommands()
+    {
+        VkCommandBufferAllocateInfo allocInfo {};
+        allocInfo.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool        = ((VulkanCommandPool*)m_rhi_command_pool)->getResource();
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer command_buffer;
+        vkAllocateCommandBuffers(m_device, &allocInfo, &command_buffer);
+
+        VkCommandBufferBeginInfo beginInfo {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        _vkBeginCommandBuffer(command_buffer, &beginInfo);
+
+        RHICommandBuffer* rhi_command_buffer = new VulkanCommandBuffer();
+        ((VulkanCommandBuffer*)rhi_command_buffer)->setResource(command_buffer);
+        return rhi_command_buffer;
+    }
+
+    void VulkanRHI::endSingleTimeCommands(RHICommandBuffer* command_buffer)
+    {
+        VkCommandBuffer vk_command_buffer = ((VulkanCommandBuffer*)command_buffer)->getResource();
+        _vkEndCommandBuffer(vk_command_buffer);
+
+        VkSubmitInfo submitInfo {};
+        submitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers    = &vk_command_buffer;
+
+        vkQueueSubmit(((VulkanQueue*)m_graphics_queue)->getResource(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(((VulkanQueue*)m_graphics_queue)->getResource());
+
+        vkFreeCommandBuffers(m_device, ((VulkanCommandPool*)m_rhi_command_pool)->getResource(), 1, &vk_command_buffer);
+        delete(command_buffer);
+    }
 }
