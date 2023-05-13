@@ -1097,7 +1097,7 @@ namespace Aura {
             if (rhi_descriptor_set_layout_binding_element.pImmutableSamplers)
             {
                 vk_descriptor_set_layout_binding_element.pImmutableSamplers = &sampler_list[sampler_current];
-                for (int i = 0; i < rhi_descriptor_set_layout_binding_element.descriptorCount; ++i)
+                for (uint32_t i = 0; i < rhi_descriptor_set_layout_binding_element.descriptorCount; ++i)
                 {
                     const auto& rhi_sampler_element = rhi_descriptor_set_layout_binding_element.pImmutableSamplers[i];
                     auto& vk_sampler_element = sampler_list[sampler_current];
