@@ -14,9 +14,10 @@ namespace Aura {
 
     void Aura::initialize() {
         
-        createRenderPass();
+        setupRenderPass();
+        setupFrameBuffers();
     }
-    void Aura::createRenderPass() {
+    void Aura::setupRenderPass() {
         
         RHIAttachmentDescription colorAttachment{};
         
@@ -99,5 +100,25 @@ namespace Aura {
 
     }
 
+    void Aura::setupFrameBuffers() {
+        const std::vector<RHIImageView*>& imageViews = rhi->m_swapchain_imageviews;
+        framebuffers.resize(imageViews.size());
+        for (size_t i = 0; i < framebuffers.size(); i++) { 
+            RHIImageView* attachments[2] = { imageViews[i], rhi->m_depth_image_view};
+
+            RHIFramebufferCreateInfo framebuffer_create_info{};
+            framebuffer_create_info.sType = RHI_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.renderPass = renderpass;
+            framebuffer_create_info.attachmentCount = sizeof(attachments) / sizeof(attachments[0]);
+            framebuffer_create_info.pAttachments = attachments;
+            framebuffer_create_info.width = rhi->m_swapchain_extent.width;
+            framebuffer_create_info.height = rhi->m_swapchain_extent.height;
+            framebuffer_create_info.layers = 1;
+
+            if (rhi->createFramebuffer(&framebuffer_create_info, framebuffers[i]) !=RHI_SUCCESS) {
+                throw std::runtime_error("create inefficient pick framebuffer");
+            }
+        }
+    }
 
 } 

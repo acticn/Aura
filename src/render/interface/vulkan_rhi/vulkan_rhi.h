@@ -145,5 +145,6 @@ namespace Aura {
             void waitForFences();
             void prepareBeforePass();
             bool createRenderPass(const RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass* &pRenderPass);
+            bool createFramebuffer(const RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer* &pFramebuffer);
     };
 } 

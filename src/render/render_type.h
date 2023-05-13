@@ -11,6 +11,7 @@ namespace Aura
     typedef uint32_t RHIDependencyFlags;
     typedef uint32_t RHISubpassDescriptionFlags;
     typedef uint32_t RHIAttachmentDescriptionFlags;
+    typedef uint32_t RHIFramebufferCreateFlags;
     enum RHIAccessFlagBits {
         RHI_ACCESS_INDIRECT_COMMAND_READ_BIT = 0x00000001,
         RHI_ACCESS_INDEX_READ_BIT = 0x00000002,

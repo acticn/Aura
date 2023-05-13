@@ -4,6 +4,20 @@
 #include <vulkan/vulkan.h>
 namespace Aura
 {
+    class VulkanFramebuffer : public RHIFramebuffer
+    {
+    public:
+        void setResource(VkFramebuffer res)
+        {
+            m_resource = res;
+        }
+        VkFramebuffer getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkFramebuffer m_resource;
+    };
     class VulkanQueue : public RHIQueue
     {
     public:

@@ -1028,4 +1028,44 @@ namespace Aura {
             return false;
         }
     }
+
+    bool VulkanRHI::createFramebuffer(const RHIFramebufferCreateInfo* pCreateInfo, RHIFramebuffer* &pFramebuffer)
+    {
+        //image_view
+        int image_view_size = pCreateInfo->attachmentCount;
+        std::vector<VkImageView> vk_image_view_list(image_view_size);
+        for (int i = 0; i < image_view_size; ++i)
+        {
+            const auto& rhi_image_view_element = pCreateInfo->pAttachments[i];
+            auto& vk_image_view_element = vk_image_view_list[i];
+
+            vk_image_view_element = ((VulkanImageView*)rhi_image_view_element)->getResource();
+        };
+
+        VkFramebufferCreateInfo create_info{};
+        create_info.sType = (VkStructureType)pCreateInfo->sType;
+        create_info.pNext = (const void*)pCreateInfo->pNext;
+        create_info.flags = (VkFramebufferCreateFlags)pCreateInfo->flags;
+        create_info.renderPass = ((VulkanRenderPass*)pCreateInfo->renderPass)->getResource();
+        create_info.attachmentCount = pCreateInfo->attachmentCount;
+        create_info.pAttachments = vk_image_view_list.data();
+        create_info.width = pCreateInfo->width;
+        create_info.height = pCreateInfo->height;
+        create_info.layers = pCreateInfo->layers;
+
+        pFramebuffer = new VulkanFramebuffer();
+        VkFramebuffer vk_framebuffer;
+        VkResult result = vkCreateFramebuffer(m_device, &create_info, nullptr, &vk_framebuffer);
+        ((VulkanFramebuffer*)pFramebuffer)->setResource(vk_framebuffer);
+
+        if (result == VK_SUCCESS)
+        {
+            return RHI_SUCCESS;
+        }
+        else
+        {
+            LOG_ERROR("vkCreateFramebuffer failed!");
+            return false;
+        }
+    }
 }

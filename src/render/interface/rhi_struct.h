@@ -14,6 +14,7 @@ namespace Aura {
     class RHIImageView { };
     class RHIImage { };
     class RHIRenderPass { };
+    class RHIFramebuffer { };
     struct RHIAttachmentReference
     {
         uint32_t attachment;
@@ -53,6 +54,18 @@ namespace Aura {
         RHIAccessFlags srcAccessMask;
         RHIAccessFlags dstAccessMask;
         RHIDependencyFlags dependencyFlags;
+    };
+    struct RHIFramebufferCreateInfo
+    {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIFramebufferCreateFlags flags;
+        RHIRenderPass* renderPass;
+        uint32_t attachmentCount;
+        RHIImageView* const* pAttachments;
+        uint32_t width;
+        uint32_t height;
+        uint32_t layers;
     };
     struct RHIRenderPassCreateInfo
     {

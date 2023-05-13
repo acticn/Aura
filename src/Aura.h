@@ -10,9 +10,11 @@ namespace Aura {
         private:
             VulkanRHI* rhi;
             RHIRenderPass* renderpass;
+            std::vector<RHIFramebuffer*> framebuffers;
             void mainLoop();
             void drawFrame();
             void initialize();
-            void createRenderPass();
+            void setupRenderPass();
+            void setupFrameBuffers();
     };
 }
