@@ -11,10 +11,12 @@ namespace Aura {
             VulkanRHI* rhi;
             RHIRenderPass* renderpass;
             std::vector<RHIFramebuffer*> framebuffers;
+            RHIDescriptorSetLayout* layout;
             void mainLoop();
             void drawFrame();
             void initialize();
             void setupRenderPass();
             void setupFrameBuffers();
+            void setupDescriptorSetLayout();
     };
 }

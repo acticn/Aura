@@ -15,6 +15,24 @@ namespace Aura {
     class RHIImage { };
     class RHIRenderPass { };
     class RHIFramebuffer { };
+    class RHIDescriptorSetLayout { };
+    class RHISampler { };
+    struct RHIDescriptorSetLayoutBinding
+    {
+        uint32_t binding;
+        RHIDescriptorType descriptorType;
+        uint32_t descriptorCount;
+        RHIShaderStageFlags stageFlags;
+        RHISampler* const* pImmutableSamplers = nullptr;
+    };
+    struct RHIDescriptorSetLayoutCreateInfo
+    {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIDescriptorSetLayoutCreateFlags flags;
+        uint32_t bindingCount;
+        const RHIDescriptorSetLayoutBinding* pBindings;
+    };
     struct RHIAttachmentReference
     {
         uint32_t attachment;

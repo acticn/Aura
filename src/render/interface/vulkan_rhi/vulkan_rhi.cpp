@@ -1068,4 +1068,77 @@ namespace Aura {
             return false;
         }
     }
+
+    bool VulkanRHI::createDescriptorSetLayout(const RHIDescriptorSetLayoutCreateInfo* pCreateInfo, RHIDescriptorSetLayout* &pSetLayout)
+    {
+        //descriptor_set_layout_binding
+        int descriptor_set_layout_binding_size = pCreateInfo->bindingCount;
+        std::vector<VkDescriptorSetLayoutBinding> vk_descriptor_set_layout_binding_list(descriptor_set_layout_binding_size);
+
+        int sampler_count = 0;
+        for (int i = 0; i < descriptor_set_layout_binding_size; ++i)
+        {
+            const auto& rhi_descriptor_set_layout_binding_element = pCreateInfo->pBindings[i];
+            if (rhi_descriptor_set_layout_binding_element.pImmutableSamplers != nullptr)
+            {
+                sampler_count += rhi_descriptor_set_layout_binding_element.descriptorCount;
+            }
+        }
+        std::vector<VkSampler> sampler_list(sampler_count);
+        int sampler_current = 0;
+
+        for (int i = 0; i < descriptor_set_layout_binding_size; ++i)
+        {
+            const auto& rhi_descriptor_set_layout_binding_element = pCreateInfo->pBindings[i];
+            auto& vk_descriptor_set_layout_binding_element = vk_descriptor_set_layout_binding_list[i];
+
+            //sampler
+            vk_descriptor_set_layout_binding_element.pImmutableSamplers = nullptr;
+            if (rhi_descriptor_set_layout_binding_element.pImmutableSamplers)
+            {
+                vk_descriptor_set_layout_binding_element.pImmutableSamplers = &sampler_list[sampler_current];
+                for (int i = 0; i < rhi_descriptor_set_layout_binding_element.descriptorCount; ++i)
+                {
+                    const auto& rhi_sampler_element = rhi_descriptor_set_layout_binding_element.pImmutableSamplers[i];
+                    auto& vk_sampler_element = sampler_list[sampler_current];
+
+                    vk_sampler_element = ((VulkanSampler*)rhi_sampler_element)->getResource();
+
+                    sampler_current++;
+                };
+            }
+            vk_descriptor_set_layout_binding_element.binding = rhi_descriptor_set_layout_binding_element.binding;
+            vk_descriptor_set_layout_binding_element.descriptorType = (VkDescriptorType)rhi_descriptor_set_layout_binding_element.descriptorType;
+            vk_descriptor_set_layout_binding_element.descriptorCount = rhi_descriptor_set_layout_binding_element.descriptorCount;
+            vk_descriptor_set_layout_binding_element.stageFlags = rhi_descriptor_set_layout_binding_element.stageFlags;
+        };
+        
+        if (sampler_count != sampler_current)
+        {
+            LOG_ERROR("sampler_count != sampller_current");
+            return false;
+        }
+
+        VkDescriptorSetLayoutCreateInfo create_info{};
+        create_info.sType = (VkStructureType)pCreateInfo->sType;
+        create_info.pNext = (const void*)pCreateInfo->pNext;
+        create_info.flags = (VkDescriptorSetLayoutCreateFlags)pCreateInfo->flags;
+        create_info.bindingCount = pCreateInfo->bindingCount;
+        create_info.pBindings = vk_descriptor_set_layout_binding_list.data();
+
+        pSetLayout = new VulkanDescriptorSetLayout();
+        VkDescriptorSetLayout vk_descriptorSetLayout;
+        VkResult result = vkCreateDescriptorSetLayout(m_device, &create_info, nullptr, &vk_descriptorSetLayout);
+        ((VulkanDescriptorSetLayout*)pSetLayout)->setResource(vk_descriptorSetLayout);
+
+        if (result == VK_SUCCESS)
+        {
+            return RHI_SUCCESS;
+        }
+        else
+        {
+            LOG_ERROR("vkCreateDescriptorSetLayout failed!");
+            return false;
+        }
+    }
 }

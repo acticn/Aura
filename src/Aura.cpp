@@ -16,6 +16,7 @@ namespace Aura {
         
         setupRenderPass();
         setupFrameBuffers();
+        setupDescriptorSetLayout();
     }
     void Aura::setupRenderPass() {
         
@@ -121,4 +122,29 @@ namespace Aura {
         }
     }
 
+    void Aura::setupDescriptorSetLayout() {
+        RHIDescriptorSetLayoutBinding layoutBinding[2];
+        layoutBinding[0].binding = 0;
+        layoutBinding[0].descriptorType = RHI_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        layoutBinding[0].descriptorCount = 1;
+        layoutBinding[0].stageFlags = RHI_SHADER_STAGE_VERTEX_BIT;
+        layoutBinding[0].pImmutableSamplers = nullptr;
+
+
+        layoutBinding[1].binding = 2;
+        layoutBinding[1].descriptorType = RHI_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        layoutBinding[1].descriptorCount = 1;
+        layoutBinding[1].stageFlags = RHI_SHADER_STAGE_FRAGMENT_BIT;
+        layoutBinding[1].pImmutableSamplers = nullptr;
+
+        RHIDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = RHI_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 2;
+        layoutInfo.pBindings = layoutBinding;
+
+        if (rhi->createDescriptorSetLayout(&layoutInfo, layout) != RHI_SUCCESS)
+        {
+            throw std::runtime_error("create debug draw layout");
+        }
+    }
 } 

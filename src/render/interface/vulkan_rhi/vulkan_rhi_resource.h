@@ -4,6 +4,34 @@
 #include <vulkan/vulkan.h>
 namespace Aura
 {
+    class VulkanDescriptorSetLayout : public RHIDescriptorSetLayout
+    {
+    public:
+        void setResource(VkDescriptorSetLayout res)
+        {
+            m_resource = res;
+        }
+        VkDescriptorSetLayout getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkDescriptorSetLayout m_resource;
+    };
+    class VulkanSampler : public RHISampler
+    {
+    public:
+        void setResource(VkSampler res)
+        {
+            m_resource = res;
+        }
+        VkSampler getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkSampler m_resource;
+    };
     class VulkanFramebuffer : public RHIFramebuffer
     {
     public:
