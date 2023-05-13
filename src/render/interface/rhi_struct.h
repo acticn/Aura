@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "../render_type.h"
 namespace Aura {
     class RHIQueue { };
     class RHICommandPool { };
@@ -12,6 +13,59 @@ namespace Aura {
     class RHIFence { };
     class RHIImageView { };
     class RHIImage { };
+    class RHIRenderPass { };
+    struct RHIAttachmentReference
+    {
+        uint32_t attachment;
+        RHIImageLayout layout;
+    };
+    struct RHIAttachmentDescription
+    {
+        RHIAttachmentDescriptionFlags flags;
+        RHIFormat format;
+        RHISampleCountFlagBits samples;
+        RHIAttachmentLoadOp loadOp;
+        RHIAttachmentStoreOp storeOp;
+        RHIAttachmentLoadOp stencilLoadOp;
+        RHIAttachmentStoreOp stencilStoreOp;
+        RHIImageLayout initialLayout;
+        RHIImageLayout finalLayout;
+    };
+    struct RHISubpassDescription
+    {
+        RHISubpassDescriptionFlags flags;
+        RHIPipelineBindPoint pipelineBindPoint;
+        uint32_t inputAttachmentCount;
+        const RHIAttachmentReference* pInputAttachments;
+        uint32_t colorAttachmentCount;
+        const RHIAttachmentReference* pColorAttachments;
+        const RHIAttachmentReference* pResolveAttachments;
+        const RHIAttachmentReference* pDepthStencilAttachment;
+        uint32_t preserveAttachmentCount;
+        const uint32_t* pPreserveAttachments;
+    };
+    struct RHISubpassDependency
+    {
+        uint32_t srcSubpass;
+        uint32_t dstSubpass;
+        RHIPipelineStageFlags srcStageMask;
+        RHIPipelineStageFlags dstStageMask;
+        RHIAccessFlags srcAccessMask;
+        RHIAccessFlags dstAccessMask;
+        RHIDependencyFlags dependencyFlags;
+    };
+    struct RHIRenderPassCreateInfo
+    {
+        RHIStructureType sType;
+        const void* pNext;
+        RHIRenderPassCreateFlags flags;
+        uint32_t attachmentCount;
+        const RHIAttachmentDescription* pAttachments;
+        uint32_t subpassCount;
+        const RHISubpassDescription* pSubpasses;
+        uint32_t dependencyCount;
+        const RHISubpassDependency* pDependencies;
+    };
     struct RHIExtent2D {
         uint32_t width;
         uint32_t height;

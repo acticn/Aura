@@ -7,5 +7,12 @@ namespace Aura {
     class Aura {
         public:
             void run();
+        private:
+            VulkanRHI* rhi;
+            RHIRenderPass* renderpass;
+            void mainLoop();
+            void drawFrame();
+            void initialize();
+            void createRenderPass();
     };
 }

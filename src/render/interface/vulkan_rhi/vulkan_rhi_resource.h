@@ -123,4 +123,19 @@ namespace Aura
     private:
         VkImage m_resource;
     };
+
+    class VulkanRenderPass : public RHIRenderPass
+    {
+    public:
+        void setResource(VkRenderPass res)
+        {
+            m_resource = res;
+        }
+        VkRenderPass getResource() const
+        {
+            return m_resource;
+        }
+    private:
+        VkRenderPass m_resource;
+    };
 } // namespace Aura

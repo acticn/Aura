@@ -109,6 +109,8 @@ namespace Aura {
             RHIImage*        m_depth_image = new VulkanImage();
             VkDeviceMemory m_depth_image_memory {nullptr};
             RHIImageView* m_depth_image_view = new VulkanImageView();
+
+            uint32_t m_current_swapchain_image_index;
         private:
             VkInstance m_instance;
             VkPhysicalDevice m_physical_device;
@@ -117,7 +119,7 @@ namespace Aura {
             VkCommandPool        m_command_pools[k_max_frames_in_flight];
             VkCommandBuffer      m_vk_command_buffers[k_max_frames_in_flight];
             RHICommandBuffer* m_command_buffers[k_max_frames_in_flight];
-
+            uint8_t              m_current_frame_index {0};
             void initWindow();
             void createWindowSurface();
             VkFormat findDepthFormat();
@@ -136,5 +138,12 @@ namespace Aura {
             void createSwapchainImageViews();
             void createFramebufferImageAndView();
             void createAssetAllocator();
+            void recreateSwapChain();
+            
+            void destroyImageView(RHIImageView* imageView);
+        public:
+            void waitForFences();
+            void prepareBeforePass();
+            bool createRenderPass(const RHIRenderPassCreateInfo* pCreateInfo, RHIRenderPass* &pRenderPass);
     };
 } 
